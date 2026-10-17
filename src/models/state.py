@@ -20,6 +20,22 @@ class PackagePlacement:
 class State:
     placements: list[PackagePlacement]
 
+    @property
+    def inside_placements(self) -> list[PackagePlacement]:
+        return [p for p in self.placements if p.position is not None]
+
+    @property
+    def outside_placements(self) -> list[PackagePlacement]:
+        return [p for p in self.placements if p.position is None]
+
+    @property
+    def total_weight(self) -> float:
+        return sum(p.package.weight for p in self.inside_placements)
+
+    @property
+    def total_value(self) -> float:
+        return sum(p.package.value for p in self.inside_placements)
+
     def clone(self):
         return State([
             PackagePlacement(p.package, p.position, p.orientation)
@@ -27,8 +43,9 @@ class State:
         ])
 
     def __repr__(self):
-        return "\\n".join(
+        return "\n".join(
             f"{p.package.id}: position={p.position}, dimensions={p.dimensions}, "
             f"orientation={p.orientation}"
             for p in self.placements
         )
+
