@@ -325,4 +325,13 @@ def print_result_table(result: HillClimbingResult, truck: Truck):
         
     print(table)
 
-# Source: https://www.datacamp.com/tutorial/hill-climbing-algorithm-for-ai-in-python
+if __name__ == "__main__":
+    truck = Truck(width=10, length=20, height=5, max_capacity=500)
+    packages = [
+        Package(id=f"P{i}", width=2, length=3, height=1, value=float((i+1)*15), weight=4.0, is_fragile=(i==1), eta=i)
+        for i in range(10)
+    ]
+    state = create_random_state(packages, truck)
+    print("Running Steepest-Ascent Hill Climbing...")
+    res = steepest_ascent_hill_climbing(state, truck)
+    print_result_table(res, truck)
