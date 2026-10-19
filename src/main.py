@@ -1,0 +1,212 @@
+import argparse
+import random
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+
+from algorithms.hill_climbing import (
+    HillClimbingResult,
+    hill_climbing_sideways_move,
+    plot_objective_history,
+    print_result_table as print_hc_table,
+    random_restart_hill_climbing,
+    simple_hill_climbing,
+    steepest_ascent_hill_climbing,
+    stochastic_hill_climbing,
+)
+from algorithms.simulated_annealing import (
+    SimulatedAnnealingResult,
+    plot_simulated_annealing,
+    print_result_table as print_sa_table,
+    simulated_annealing,
+)
+from models.truck import Truck
+from models.package import Package
+from utils.loader import load_instance
+from utils.moves import create_random_state
+from visualization.visualization import save_state_image, show_state
+
+ALGORITHMS = {
+    "simple": ("Simple Hill Climbing", simple_hill_climbing),
+    "steepest": ("Steepest-Ascent Hill Climbing", steepest_ascent_hill_climbing),
+    "stochastic": ("Stochastic Hill Climbing", stochastic_hill_climbing),
+    "sideways": ("Hill Climbing with Sideways Move", hill_climbing_sideways_move),
+    "random_restart": ("Random Restart Hill Climbing", random_restart_hill_climbing),
+    "sa": ("Simulated Annealing", simulated_annealing),
+}
+
+
+def _write_metrics_hc(result: HillClimbingResult, truck: Truck, path: Path) -> None:
+    import io
+    from contextlib import redirect_stdout
+
+    buffer = io.StringIO()
+    with redirect_stdout(buffer):
+        print_hc_table(result, truck)
+    path.write_text(buffer.getvalue(), encoding="utf-8")
+
+
+def _write_metrics_sa(result: SimulatedAnnealingResult, truck: Truck, path: Path) -> None:
+    import io
+    from contextlib import redirect_stdout
+
+    buffer = io.StringIO()
+    with redirect_stdout(buffer):
+        print_sa_table(result, truck)
+    path.write_text(buffer.getvalue(), encoding="utf-8")
+
+
+def run_single(
+    algorithm_key: str,
+    truck: Truck,
+    packages: list[Package],
+    seed: int,
+    output_dir: Path,
+    interactive: bool,
+) -> HillClimbingResult | SimulatedAnnealingResult:
+    random.seed(seed)
+    name, algo_fn = ALGORITHMS[algorithm_key]
+
+    if algorithm_key == "random_restart":
+        result = algo_fn(packages, truck)
+        initial = result.initial_state
+    else:
+        initial = create_random_state(packages, truck)
+        result = algo_fn(initial, truck)
+
+    run_dir = output_dir / algorithm_key / f"seed_{seed}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    save_state_image(initial, truck, f"{name} - Initial", run_dir / "initial.png")
+    save_state_image(result.final_state, truck, f"{name} - Final", run_dir / "final.png")
+
+    if algorithm_key == "sa":
+        sa_result: SimulatedAnnealingResult = result  # type: ignore[assignment]
+        plot_simulated_annealing(
+            sa_result,
+            save_obj_path=str(run_dir / "objective.png"),
+            save_exp_path=str(run_dir / "acceptance.png"),
+        )
+        _write_metrics_sa(sa_result, truck, run_dir / "metrics.txt")
+        if interactive:
+            show_state(initial, truck, f"{name} - Initial")
+            show_state(sa_result.final_state, truck, f"{name} - Final")
+        return sa_result
+
+    hc_result: HillClimbingResult = result  # type: ignore[assignment]
+    plot_objective_history(hc_result, save_path=str(run_dir / "objective.png"))
+    _write_metrics_hc(hc_result, truck, run_dir / "metrics.txt")
+
+    if interactive:
+        show_state(initial, truck, f"{name} - Initial")
+        show_state(hc_result.final_state, truck, f"{name} - Final")
+
+    return hc_result
+
+
+def run_experiment(
+    algorithm_key: str,
+    instance_path: Path,
+    runs: int,
+    output_dir: Path,
+    base_seed: int,
+    interactive: bool,
+) -> None:
+    truck, packages = load_instance(instance_path)
+
+    for run_index in range(runs):
+        seed = base_seed + run_index
+        open_viewer = interactive and runs == 1 and run_index == 0
+        print(f"Running {algorithm_key} (run {run_index + 1}/{runs}, seed={seed})...")
+        run_single(
+            algorithm_key,
+            truck,
+            packages,
+            seed,
+            output_dir,
+            interactive=open_viewer,
+        )
+
+    print(f"Done. Outputs written under: {output_dir / algorithm_key}")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="IF3170 truck packing — local search runner with raylib visualization"
+    )
+    parser.add_argument(
+        "--instance",
+        type=Path,
+        default=ROOT.parent / "data" / "instances" / "sample.json",
+        help="Path to JSON instance (truck + packages)",
+    )
+    parser.add_argument(
+        "--algorithm",
+        choices=list(ALGORITHMS.keys()),
+        default="steepest",
+        help="Local search algorithm to run",
+    )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=3,
+        help="Number of experiment runs (spec: 3 for non-GA algorithms)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Base random seed; run i uses seed + i",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=ROOT.parent / "output",
+        help="Directory for plots, screenshots, and metrics",
+    )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Open raylib viewer after a single run (use with --runs 1)",
+    )
+    parser.add_argument(
+        "--view-only",
+        action="store_true",
+        help="Skip search; show random initial state in raylib",
+    )
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if not args.instance.exists():
+        print(f"Instance not found: {args.instance}", file=sys.stderr)
+        return 1
+
+    truck, packages = load_instance(args.instance)
+
+    if args.view_only:
+        initial = create_random_state(packages, truck)
+        show_state(initial, truck, "Random initial state")
+        return 0
+
+    if args.interactive and args.runs != 1:
+        print("Note: --interactive only opens the viewer when --runs 1.", file=sys.stderr)
+
+    run_experiment(
+        algorithm_key=args.algorithm,
+        instance_path=args.instance,
+        runs=args.runs,
+        output_dir=args.output_dir,
+        base_seed=args.seed,
+        interactive=args.interactive,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
