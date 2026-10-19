@@ -22,6 +22,14 @@ from algorithms.simulated_annealing import (
     print_result_table as print_sa_table,
     simulated_annealing,
 )
+
+from algorithms.genetic_algorithm import (
+    GeneticAlgorithmResult,
+    genetic_algorithm,
+    plot_genetic_algorithm,
+    print_result_table as print_ga_table,
+)
+
 from models.truck import Truck
 from models.package import Package
 from utils.loader import load_instance
@@ -35,6 +43,7 @@ ALGORITHMS = {
     "sideways": ("Hill Climbing with Sideways Move", hill_climbing_sideways_move),
     "random_restart": ("Random Restart Hill Climbing", random_restart_hill_climbing),
     "sa": ("Simulated Annealing", simulated_annealing),
+    "ga": ("Genetic Algorithm", genetic_algorithm),
 }
 
 
@@ -52,9 +61,25 @@ def _write_metrics_sa(result: SimulatedAnnealingResult, truck: Truck, path: Path
     import io
     from contextlib import redirect_stdout
 
+
+
     buffer = io.StringIO()
     with redirect_stdout(buffer):
         print_sa_table(result, truck)
+    path.write_text(buffer.getvalue(), encoding="utf-8")
+
+def _write_metrics_ga(
+    result: GeneticAlgorithmResult,
+    truck: Truck,
+    path: Path,
+) -> None:
+    import io
+    from contextlib import redirect_stdout
+
+    buffer = io.StringIO()
+    with redirect_stdout(buffer):
+        print_ga_table(result, truck)
+
     path.write_text(buffer.getvalue(), encoding="utf-8")
 
 
@@ -65,11 +90,11 @@ def run_single(
     seed: int,
     output_dir: Path,
     interactive: bool,
-) -> HillClimbingResult | SimulatedAnnealingResult:
+) -> HillClimbingResult | SimulatedAnnealingResult | GeneticAlgorithmResult:
     random.seed(seed)
     name, algo_fn = ALGORITHMS[algorithm_key]
 
-    if algorithm_key == "random_restart":
+    if algorithm_key in ("random_restart", "ga"):
         result = algo_fn(packages, truck)
         initial = result.initial_state
     else:
@@ -79,24 +104,50 @@ def run_single(
     run_dir = output_dir / algorithm_key / f"seed_{seed}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    save_state_image(initial, truck, f"{name} - Initial", run_dir / "initial.png")
-    save_state_image(result.final_state, truck, f"{name} - Final", run_dir / "final.png")
+    save_state_image(
+        initial, truck, f"{name} - Initial", run_dir / "initial.png"
+    )
+    save_state_image(
+        result.final_state, truck, f"{name} - Final", run_dir / "final.png"
+    )
 
     if algorithm_key == "sa":
-        sa_result: SimulatedAnnealingResult = result  # type: ignore[assignment]
+        sa_result: SimulatedAnnealingResult = result
+
         plot_simulated_annealing(
             sa_result,
             save_obj_path=str(run_dir / "objective.png"),
             save_exp_path=str(run_dir / "acceptance.png"),
         )
         _write_metrics_sa(sa_result, truck, run_dir / "metrics.txt")
+
         if interactive:
             show_state(initial, truck, f"{name} - Initial")
             show_state(sa_result.final_state, truck, f"{name} - Final")
+
         return sa_result
 
-    hc_result: HillClimbingResult = result  # type: ignore[assignment]
-    plot_objective_history(hc_result, save_path=str(run_dir / "objective.png"))
+    if algorithm_key == "ga":
+        ga_result: GeneticAlgorithmResult = result
+
+        plot_genetic_algorithm(
+            ga_result,
+            save_path=str(run_dir / "objective.png"),
+        )
+        _write_metrics_ga(ga_result, truck, run_dir / "metrics.txt")
+
+        if interactive:
+            show_state(initial, truck, f"{name} - Initial")
+            show_state(ga_result.final_state, truck, f"{name} - Final")
+
+        return ga_result
+
+    hc_result: HillClimbingResult = result
+
+    plot_objective_history(
+        hc_result,
+        save_path=str(run_dir / "objective.png"),
+    )
     _write_metrics_hc(hc_result, truck, run_dir / "metrics.txt")
 
     if interactive:
@@ -104,6 +155,8 @@ def run_single(
         show_state(hc_result.final_state, truck, f"{name} - Final")
 
     return hc_result
+
+
 
 
 def run_experiment(
