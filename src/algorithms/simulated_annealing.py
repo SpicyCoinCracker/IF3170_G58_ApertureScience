@@ -177,8 +177,15 @@ def print_result_table(result: SimulatedAnnealingResult, truck: Truck):
     table.add_row(["Paket Dimuat (State Akhir)", f"{len(result.final_state.inside_placements)} / {len(result.final_state.placements)}"])
     table.add_row(["Total Bobot (State Akhir)", f"{result.final_state.total_weight:.2f} / {truck.max_capacity:.2f}"])
     table.add_row(["Status State Akhir Valid?", "Ya" if is_valid_state(result.final_state, truck) else "Tidak"])
-    table.add_row(["Status State Terbaik Valid?", "Ya" if is_valid_state(result.best_state, truck) else "Tidak"])
-    
     print(table)
 
-# Source: https://www.geeksforgeeks.org/dsa/implement-simulated-annealing-in-python/
+if __name__ == "__main__":
+    truck = Truck(width=10, length=20, height=5, max_capacity=500)
+    packages = [
+        Package(id=f"P{i}", width=2, length=3, height=1, value=float((i+1)*15), weight=4.0, is_fragile=(i==1), eta=i)
+        for i in range(10)
+    ]
+    state = create_random_state(packages, truck)
+    print("Running Simulated Annealing...")
+    res = simulated_annealing(state, truck, max_iterations=200)
+    print_result_table(res, truck)
