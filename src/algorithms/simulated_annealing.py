@@ -14,7 +14,7 @@ try:
     from ..models.package import Package
     from ..utils.objective import calculate_objective
     from ..utils.moves import get_random_neighbor, create_random_state
-    from ..utils.constraints import is_valid_state
+    from ..utils.constraints import is_valid_state, to_truck_list
 except ImportError:
     sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
     from src.models.truck import Truck
@@ -22,7 +22,7 @@ except ImportError:
     from src.models.package import Package
     from src.utils.objective import calculate_objective
     from src.utils.moves import get_random_neighbor, create_random_state
-    from src.utils.constraints import is_valid_state
+    from src.utils.constraints import is_valid_state, to_truck_list
 
 @dataclass
 class SimulatedAnnealingResult:
@@ -160,7 +160,8 @@ def plot_simulated_annealing(
         plt.show()
     plt.close()
 
-def print_result_table(result: SimulatedAnnealingResult, truck: Truck):
+def print_result_table(result: SimulatedAnnealingResult, truck: Truck | list[Truck]):
+    trucks = to_truck_list(truck)
     table = PrettyTable()
     table.field_names = ["Metrik", "Nilai"]
     table.align["Metrik"] = "l"
@@ -175,7 +176,13 @@ def print_result_table(result: SimulatedAnnealingResult, truck: Truck):
     table.add_row(["Frekuensi Stuck di Local Optima", f"{result.stuck_frequency:.4f} ({result.stuck_count}/{result.iterations})"])
     table.add_row(["Suhu Awal / Akhir", f"{result.metadata.get('initial_temp', 0):.2f} -> {result.metadata.get('final_temp', 0):.4f}"])
     table.add_row(["Paket Dimuat (State Akhir)", f"{len(result.final_state.inside_placements)} / {len(result.final_state.placements)}"])
-    table.add_row(["Total Bobot (State Akhir)", f"{result.final_state.total_weight:.2f} / {truck.max_capacity:.2f}"])
+    if len(trucks) == 1:
+        table.add_row(["Total Bobot (State Akhir)", f"{result.final_state.total_weight:.2f} / {trucks[0].max_capacity:.2f}"])
+    else:
+        for idx, t in enumerate(trucks):
+            table.add_row([f"Bobot {t.id} (Truk {idx+1})", f"{result.final_state.truck_weight(idx):.2f} / {t.max_capacity:.2f}"])
+        total_cap = sum(t.max_capacity for t in trucks)
+        table.add_row(["Total Bobot Armada", f"{result.final_state.total_weight:.2f} / {total_cap:.2f}"])
     table.add_row(["Status State Akhir Valid?", "Ya" if is_valid_state(result.final_state, truck) else "Tidak"])
     print(table)
 

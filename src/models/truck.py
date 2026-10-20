@@ -6,6 +6,7 @@ class Truck:
     length: int
     height: int
     max_capacity: float
+    id: str = "Truck"
 
     def __post_init__(self):
         if min(self.width, self.length, self.height) <= 0:

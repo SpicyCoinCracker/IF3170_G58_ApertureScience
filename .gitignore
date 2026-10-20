@@ -8,6 +8,11 @@ env/
 
 .vscode/
 .idea/
+pyrightconfig.json
 
 .DS_Store
 Thumbs.db
+
+output/*
+!output/Output.txt
+!output/.gitkeep

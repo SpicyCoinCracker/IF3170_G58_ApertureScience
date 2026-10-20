@@ -13,7 +13,7 @@ try:
     from ..models.package import Package
     from ..utils.objective import calculate_objective
     from ..utils.moves import create_random_state, get_random_neighbor
-    from ..utils.constraints import is_valid_state
+    from ..utils.constraints import is_valid_state, to_truck_list
 except ImportError:
     sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
     from src.models.truck import Truck
@@ -21,7 +21,7 @@ except ImportError:
     from src.models.package import Package
     from src.utils.objective import calculate_objective
     from src.utils.moves import create_random_state, get_random_neighbor
-    from src.utils.constraints import is_valid_state
+    from src.utils.constraints import is_valid_state, to_truck_list
 
 @dataclass
 class GeneticAlgorithmResult:
@@ -49,23 +49,23 @@ def single_point_crossover(p1: State, p2: State) -> tuple[State, State]:
         
     point = random.randint(1, n - 1)
     c1_placements = [
-        PackagePlacement(p.package, p.position, p.orientation)
+        PackagePlacement(p.package, p.position, p.orientation, p.truck_idx)
         for p in (p1.placements[:point] + p2.placements[point:])
     ]
     c2_placements = [
-        PackagePlacement(p.package, p.position, p.orientation)
+        PackagePlacement(p.package, p.position, p.orientation, p.truck_idx)
         for p in (p2.placements[:point] + p1.placements[point:])
     ]
     return State(c1_placements), State(c2_placements)
 
-def mutate(state: State, truck: Truck, mutation_rate: float) -> State:
+def mutate(state: State, truck: Truck | list[Truck], mutation_rate: float) -> State:
     if random.random() < mutation_rate:
         return get_random_neighbor(state, truck)
     return state
 
 def genetic_algorithm(
     packages: list[Package],
-    truck: Truck,
+    truck: Truck | list[Truck],
     population_size: int = 40,
     iterations: int = 100,
     crossover_rate: float = 0.8,
@@ -153,7 +153,8 @@ def plot_genetic_algorithm(result: GeneticAlgorithmResult, save_path: str | None
         plt.show()
     plt.close()
 
-def print_result_table(result: GeneticAlgorithmResult, truck: Truck):
+def print_result_table(result: GeneticAlgorithmResult, truck: Truck | list[Truck]):
+    trucks = to_truck_list(truck)
     table = PrettyTable()
     table.field_names = ["Metrik", "Nilai"]
     table.align["Metrik"] = "l"
@@ -166,7 +167,13 @@ def print_result_table(result: GeneticAlgorithmResult, truck: Truck):
     table.add_row(["Nilai Akhir (Best)", f"{result.final_value:.2f}"])
     table.add_row(["Durasi Pencarian (detik)", f"{result.duration:.4f}"])
     table.add_row(["Paket Dimuat", f"{len(result.final_state.inside_placements)} / {len(result.final_state.placements)}"])
-    table.add_row(["Total Bobot Dimuat", f"{result.final_state.total_weight:.2f} / {truck.max_capacity:.2f}"])
+    if len(trucks) == 1:
+        table.add_row(["Total Bobot Dimuat", f"{result.final_state.total_weight:.2f} / {trucks[0].max_capacity:.2f}"])
+    else:
+        for idx, t in enumerate(trucks):
+            table.add_row([f"Bobot {t.id} (Truk {idx+1})", f"{result.final_state.truck_weight(idx):.2f} / {t.max_capacity:.2f}"])
+        total_cap = sum(t.max_capacity for t in trucks)
+        table.add_row(["Total Bobot Armada", f"{result.final_state.total_weight:.2f} / {total_cap:.2f}"])
     table.add_row(["Status State Valid?", "Ya" if is_valid_state(result.final_state, truck) else "Tidak"])
     
     for k, v in result.metadata.items():

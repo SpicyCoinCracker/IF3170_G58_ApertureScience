@@ -9,6 +9,9 @@ except ImportError:
     from src.models.truck import Truck
     from src.models.state import State, PackagePlacement
 
+def to_truck_list(truck: Truck | list[Truck]) -> list[Truck]:
+    return truck if isinstance(truck, list) else [truck]
+
 def is_within_bounds(placement: PackagePlacement, truck: Truck) -> bool:
     if placement.position is None:
         return True
@@ -23,6 +26,8 @@ def is_within_bounds(placement: PackagePlacement, truck: Truck) -> bool:
 
 def check_overlap(p1: PackagePlacement, p2: PackagePlacement) -> bool:
     if p1.position is None or p2.position is None:
+        return False
+    if p1.truck_idx != p2.truck_idx:
         return False
     x1, y1, z1 = p1.position
     w1, l1, h1 = p1.dimensions
@@ -45,7 +50,7 @@ def is_supported(placement: PackagePlacement, inside_placements: list[PackagePla
         return True
 
     for other in inside_placements:
-        if other is placement or other.position is None:
+        if other is placement or other.position is None or other.truck_idx != placement.truck_idx:
             continue
         if other.package.is_fragile:
             continue
@@ -68,7 +73,7 @@ def check_fragile_violations(inside_placements: list[PackagePlacement]) -> int:
         pw, pl, ph = p.dimensions
 
         for other in inside_placements:
-            if other is p or other.position is None:
+            if other is p or other.position is None or other.truck_idx != p.truck_idx:
                 continue
             ox, oy, oz = other.position
             ow, ol, _ = other.dimensions
@@ -79,9 +84,17 @@ def check_fragile_violations(inside_placements: list[PackagePlacement]) -> int:
                     break
     return violations
 
-def get_violations(state: State, truck: Truck) -> dict:
+def get_violations(state: State, truck: Truck | list[Truck]) -> dict:
+    trucks = to_truck_list(truck)
+    num_trucks = len(trucks)
+
     inside = state.inside_placements
-    out_of_bounds = sum(1 for p in inside if not is_within_bounds(p, truck))
+    out_of_bounds = 0
+    for p in inside:
+        if p.truck_idx < 0 or p.truck_idx >= num_trucks:
+            out_of_bounds += 1
+        elif not is_within_bounds(p, trucks[p.truck_idx]):
+            out_of_bounds += 1
 
     overlaps = 0
     n = len(inside)
@@ -92,7 +105,10 @@ def get_violations(state: State, truck: Truck) -> dict:
 
     floating = sum(1 for p in inside if not is_supported(p, inside))
     fragile_violations = check_fragile_violations(inside)
-    overweight = max(0.0, state.total_weight - truck.max_capacity)
+    overweight = sum(
+        max(0.0, state.truck_weight(t_idx) - t.max_capacity)
+        for t_idx, t in enumerate(trucks)
+    )
 
     is_valid = (
         out_of_bounds == 0 and
@@ -111,10 +127,10 @@ def get_violations(state: State, truck: Truck) -> dict:
         "is_valid": is_valid
     }
 
-def is_valid_state(state: State, truck: Truck) -> bool:
+def is_valid_state(state: State, truck: Truck | list[Truck]) -> bool:
     return get_violations(state, truck)["is_valid"]
 
-def calculate_penalty(state: State, truck: Truck) -> float:
+def calculate_penalty(state: State, truck: Truck | list[Truck]) -> float:
     violations = get_violations(state, truck)
     if violations["is_valid"]:
         return 0.0
