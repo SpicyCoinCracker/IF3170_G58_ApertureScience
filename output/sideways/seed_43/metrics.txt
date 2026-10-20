@@ -1,0 +1,15 @@
++--------------------------+----------------------------------+
+| Metrik                   |                            Nilai |
++--------------------------+----------------------------------+
+| Algoritma                | Hill Climbing with Sideways Move |
+| Nilai Awal               |                            85.00 |
+| Nilai Akhir              |                           150.00 |
+| Total Iterasi            |                               52 |
+| Durasi Pencarian (detik) |                           0.0741 |
+| Paket Dimuat             |                            5 / 5 |
+| Total Bobot Dimuat       |                    33.00 / 80.00 |
+| Status State Valid?      |                               Ya |
+| sideways_moves_done      |                               50 |
+| max_sideways             |                               50 |
+| stop_reason              |             max_sideways_reached |
++--------------------------+----------------------------------+

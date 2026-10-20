@@ -1,0 +1,17 @@
++--------------------------+-------------------+
+| Metrik                   |             Nilai |
++--------------------------+-------------------+
+| Algoritma                | Genetic Algorithm |
+| Jumlah Populasi          |                80 |
+| Total Iterasi            |               100 |
+| Nilai Awal (Best)        |            125.00 |
+| Nilai Akhir (Best)       |            150.00 |
+| Durasi Pencarian (detik) |            0.2580 |
+| Paket Dimuat             |             5 / 5 |
+| Total Bobot Dimuat       |     33.00 / 80.00 |
+| Status State Valid?      |                Ya |
+| crossover_rate           |               0.8 |
+| mutation_rate            |               0.2 |
+| elite_size               |                 2 |
+| tournament_k             |                 3 |
++--------------------------+-------------------+

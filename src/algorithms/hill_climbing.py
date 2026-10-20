@@ -7,21 +7,14 @@ import numpy as np
 from dataclasses import dataclass, field
 from prettytable import PrettyTable
 
-try:
-    from ..models.truck import Truck
-    from ..models.state import State
-    from ..models.package import Package
-    from ..utils.objective import calculate_objective
-    from ..utils.moves import get_random_neighbor, generate_neighbors, create_random_state
-    from ..utils.constraints import is_valid_state, to_truck_list
-except ImportError:
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    from src.models.truck import Truck
-    from src.models.state import State
-    from src.models.package import Package
-    from src.utils.objective import calculate_objective
-    from src.utils.moves import get_random_neighbor, generate_neighbors, create_random_state
-    from src.utils.constraints import is_valid_state, to_truck_list
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from models.truck import Truck
+from models.state import State
+from models.package import Package
+from utils.objective import calculate_objective
+from utils.moves import get_random_neighbor, generate_neighbors, generate_full_neighbors, create_random_state
+from utils.constraints import is_valid_state, to_truck_list
 
 @dataclass
 class HillClimbingResult:
@@ -37,7 +30,7 @@ class HillClimbingResult:
 
 def simple_hill_climbing(
     initial_state: State,
-    truck: Truck,
+    truck: Truck | list[Truck],
     max_iterations: int = 500,
     patience: int = 50,
     objective_func = calculate_objective
@@ -82,7 +75,7 @@ def simple_hill_climbing(
 
 def steepest_ascent_hill_climbing(
     initial_state: State,
-    truck: Truck,
+    truck: Truck | list[Truck],
     max_iterations: int = 300,
     num_candidates: int = 50,
     objective_func = calculate_objective
@@ -95,7 +88,7 @@ def steepest_ascent_hill_climbing(
     iteration = 0
     while iteration < max_iterations:
         iteration += 1
-        candidates = generate_neighbors(current, truck, count=num_candidates)
+        candidates = generate_full_neighbors(current, truck, relocate_samples=num_candidates)
         best_candidate = None
         best_cand_val = -float("inf")
         
@@ -128,7 +121,7 @@ def steepest_ascent_hill_climbing(
 
 def stochastic_hill_climbing(
     initial_state: State,
-    truck: Truck,
+    truck: Truck | list[Truck],
     max_iterations: int = 500,
     num_candidates: int = 30,
     objective_func = calculate_objective
@@ -173,7 +166,7 @@ def stochastic_hill_climbing(
 
 def hill_climbing_sideways_move(
     initial_state: State,
-    truck: Truck,
+    truck: Truck | list[Truck],
     max_iterations: int = 500,
     max_sideways: int = 50,
     num_candidates: int = 40,
@@ -189,7 +182,7 @@ def hill_climbing_sideways_move(
     
     while iteration < max_iterations:
         iteration += 1
-        candidates = generate_neighbors(current, truck, count=num_candidates)
+        candidates = generate_full_neighbors(current, truck, relocate_samples=num_candidates)
         
         best_candidate = None
         best_cand_val = -float("inf")
@@ -207,7 +200,6 @@ def hill_climbing_sideways_move(
         if best_cand_val > current_val:
             current = best_candidate
             current_val = best_cand_val
-            sideways_count = 0
             history.append(current_val)
         elif abs(best_cand_val - current_val) < 1e-6:
             sideways_count += 1
@@ -240,7 +232,7 @@ def hill_climbing_sideways_move(
 
 def random_restart_hill_climbing(
     packages: list[Package],
-    truck: Truck,
+    truck: Truck | list[Truck],
     max_restarts: int = 5,
     max_iterations_per_restart: int = 150,
     num_candidates: int = 40,
@@ -274,6 +266,7 @@ def random_restart_hill_climbing(
             best_overall_val = res.final_value
             best_overall_state = res.final_state
             
+    assert initial_state_first is not None and best_overall_state is not None
     duration = time.time() - start_time
     return HillClimbingResult(
         algorithm_name="Random Restart Hill Climbing",
@@ -341,4 +334,4 @@ if __name__ == "__main__":
     state = create_random_state(packages, truck)
     print("Running Steepest-Ascent Hill Climbing...")
     res = steepest_ascent_hill_climbing(state, truck)
-    print_result_table(res, truck)
+    print_result_table(res, truck)

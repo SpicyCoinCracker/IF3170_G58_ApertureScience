@@ -5,22 +5,15 @@ from pathlib import Path
 import pyray as pr
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-try:
-    from models.state import State
-    from models.truck import Truck
-    from utils.objective import calculate_objective
-    from utils.constraints import to_truck_list
-except ImportError:
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    from src.models.state import State
-    from src.models.truck import Truck
-    from src.utils.objective import calculate_objective
-    from src.utils.constraints import to_truck_list
+from models.state import State
+from models.truck import Truck
+from utils.objective import calculate_objective
+from utils.constraints import to_truck_list
 
 
 def _box_center_and_size(x: int, y: int, z: int, w: int, l: int, h: int):
-    """Map corner (x,y,z) with model axes to raylib center (Y-up)."""
     center = (x + w / 2.0, z + h / 2.0, y + l / 2.0)
     size = (float(w), float(h), float(l))
     return center, size
@@ -54,7 +47,7 @@ def _make_camera(truck: Truck | list[Truck]) -> pr.Camera3D:
         target,
         [0, 1, 0],
         45.0,
-        pr.CAMERA_PERSPECTIVE
+        pr.CameraProjection.CAMERA_PERSPECTIVE
     )
 
 
@@ -135,7 +128,7 @@ def _render_frame(state, truck, title, camera, interactive):
     pr.end_drawing()
 
     if interactive:
-        pr.update_camera(camera, pr.CAMERA_ORBITAL)
+        pr.update_camera(camera, pr.CameraMode.CAMERA_ORBITAL)
 
 def save_state_image(
     state: State,
@@ -174,7 +167,7 @@ def show_state(
     camera = _make_camera(truck)
 
     while not pr.window_should_close():
-        if pr.is_key_pressed(pr.KEY_ESCAPE):
+        if pr.is_key_pressed(pr.KeyboardKey.KEY_ESCAPE):
             break
         _render_frame(state, truck, title, camera, interactive=True)
 

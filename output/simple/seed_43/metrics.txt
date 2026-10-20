@@ -1,0 +1,13 @@
++--------------------------+----------------------+
+| Metrik                   |                Nilai |
++--------------------------+----------------------+
+| Algoritma                | Simple Hill Climbing |
+| Nilai Awal               |                85.00 |
+| Nilai Akhir              |               150.00 |
+| Total Iterasi            |                   72 |
+| Durasi Pencarian (detik) |               0.0024 |
+| Paket Dimuat             |                5 / 5 |
+| Total Bobot Dimuat       |        33.00 / 80.00 |
+| Status State Valid?      |                   Ya |
+| stop_reason              |       patience_limit |
++--------------------------+----------------------+

@@ -1,13 +1,10 @@
 import sys
 from pathlib import Path
 
-try:
-    from ..models.truck import Truck
-    from ..models.state import State, PackagePlacement
-except ImportError:
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    from src.models.truck import Truck
-    from src.models.state import State, PackagePlacement
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from models.truck import Truck
+from models.state import State, PackagePlacement
 
 def to_truck_list(truck: Truck | list[Truck]) -> list[Truck]:
     return truck if isinstance(truck, list) else [truck]
@@ -130,15 +127,25 @@ def get_violations(state: State, truck: Truck | list[Truck]) -> dict:
 def is_valid_state(state: State, truck: Truck | list[Truck]) -> bool:
     return get_violations(state, truck)["is_valid"]
 
-def calculate_penalty(state: State, truck: Truck | list[Truck]) -> float:
+def violation_units(state: State, truck: Truck | list[Truck]) -> float:
     violations = get_violations(state, truck)
     if violations["is_valid"]:
         return 0.0
 
-    penalty = 0.0
-    penalty += violations["out_of_bounds"] * 500.0
-    penalty += violations["overlaps"] * 400.0
-    penalty += violations["floating"] * 300.0
-    penalty += violations["fragile_violations"] * 350.0
-    penalty += violations["overweight"] * 25.0
-    return penalty
+    units = (
+        violations["out_of_bounds"]
+        + violations["overlaps"]
+        + violations["floating"]
+        + violations["fragile_violations"]
+    )
+    if violations["overweight"] > 0:
+        units += 1.0 + violations["overweight"]
+    return float(units)
+
+def calculate_penalty(state: State, truck: Truck | list[Truck], scale: float | None = None) -> float:
+    units = violation_units(state, truck)
+    if units == 0:
+        return 0.0
+    if scale is None:
+        scale = sum(p.package.value for p in state.placements) + 1.0
+    return scale * units

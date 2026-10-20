@@ -1,0 +1,15 @@
++----------------------------+---------------------+
+| Metrik                     |               Nilai |
++----------------------------+---------------------+
+| Algoritma                  | Simulated Annealing |
+| Nilai Awal                 |            -1450.00 |
+| Nilai Akhir                |              150.00 |
+| Nilai Terbaik Ditemukan    |              150.00 |
+| Total Iterasi              |                1500 |
+| Durasi Pencarian (detik)   |              0.0440 |
+| Frekuensi Stuck            |   0.3440 (516/1500) |
+| Suhu Awal / Akhir          |   1000.00 -> 0.5428 |
+| Paket Dimuat (State Akhir) |               5 / 5 |
+| Total Bobot (State Akhir)  |       33.00 / 80.00 |
+| Status State Akhir Valid?  |                  Ya |
++----------------------------+---------------------+

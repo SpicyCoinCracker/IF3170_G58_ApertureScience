@@ -7,21 +7,14 @@ import numpy as np
 from dataclasses import dataclass, field
 from prettytable import PrettyTable
 
-try:
-    from ..models.truck import Truck
-    from ..models.state import State, PackagePlacement
-    from ..models.package import Package
-    from ..utils.objective import calculate_objective
-    from ..utils.moves import create_random_state, get_random_neighbor
-    from ..utils.constraints import is_valid_state, to_truck_list
-except ImportError:
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    from src.models.truck import Truck
-    from src.models.state import State, PackagePlacement
-    from src.models.package import Package
-    from src.utils.objective import calculate_objective
-    from src.utils.moves import create_random_state, get_random_neighbor
-    from src.utils.constraints import is_valid_state, to_truck_list
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from models.truck import Truck
+from models.state import State, PackagePlacement
+from models.package import Package
+from utils.objective import calculate_objective
+from utils.moves import create_random_state, get_random_neighbor
+from utils.constraints import is_valid_state, to_truck_list
 
 @dataclass
 class GeneticAlgorithmResult:
@@ -189,4 +182,4 @@ if __name__ == "__main__":
     ]
     print("Running Genetic Algorithm...")
     res = genetic_algorithm(packages, truck, population_size=30, iterations=50)
-    print_result_table(res, truck)
+    print_result_table(res, truck)

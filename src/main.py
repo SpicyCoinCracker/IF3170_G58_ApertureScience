@@ -1,4 +1,5 @@
 import argparse
+from typing import Any, Callable
 import random
 import sys
 from pathlib import Path
@@ -35,7 +36,7 @@ from utils.moves import create_random_state
 from utils.objective import OBJECTIVE_FUNCTIONS, calculate_objective
 from visualization.visualization import save_state_image, show_state
 
-ALGORITHMS = {
+ALGORITHMS: dict[str, tuple[str, Callable[..., Any]]] = {
     "simple": ("Simple Hill Climbing", simple_hill_climbing),
     "steepest": ("Steepest-Ascent Hill Climbing", steepest_ascent_hill_climbing),
     "stochastic": ("Stochastic Hill Climbing", stochastic_hill_climbing),
@@ -59,7 +60,6 @@ def _write_metrics_hc(result: HillClimbingResult, truck: Truck | list[Truck], pa
 def _write_metrics_sa(result: SimulatedAnnealingResult, truck: Truck | list[Truck], path: Path) -> None:
     import io
     from contextlib import redirect_stdout
-
 
 
     buffer = io.StringIO()
@@ -136,7 +136,7 @@ def run_single(
         return sa_result
 
     if algorithm_key == "ga":
-        ga_result: GeneticAlgorithmResult = result  # type: ignore[assignment]
+        ga_result: GeneticAlgorithmResult = result
         plot_genetic_algorithm(ga_result, save_path=str(run_dir / "objective.png"))
         _write_metrics_ga(ga_result, truck, run_dir / "metrics.txt")
         if interactive:
@@ -144,7 +144,7 @@ def run_single(
             show_state(ga_result.final_state, truck, f"{name} - Final")
         return ga_result
 
-    hc_result: HillClimbingResult = result  # type: ignore[assignment]
+    hc_result: HillClimbingResult = result
     plot_objective_history(hc_result, save_path=str(run_dir / "objective.png"))
     _write_metrics_hc(hc_result, truck, run_dir / "metrics.txt")
 
@@ -153,8 +153,6 @@ def run_single(
         show_state(hc_result.final_state, truck, f"{name} - Final")
 
     return hc_result
-
-
 
 
 def run_experiment(
@@ -190,7 +188,7 @@ def run_experiment(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="IF3170 truck packing — local search & GA runner with multi-truck and raylib visualization"
+        description="IF3170 Tugas Besar 1"
     )
     parser.add_argument(
         "--instance",

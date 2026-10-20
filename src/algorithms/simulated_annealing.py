@@ -8,21 +8,14 @@ import numpy as np
 from dataclasses import dataclass, field
 from prettytable import PrettyTable
 
-try:
-    from ..models.truck import Truck
-    from ..models.state import State
-    from ..models.package import Package
-    from ..utils.objective import calculate_objective
-    from ..utils.moves import get_random_neighbor, create_random_state
-    from ..utils.constraints import is_valid_state, to_truck_list
-except ImportError:
-    sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-    from src.models.truck import Truck
-    from src.models.state import State
-    from src.models.package import Package
-    from src.utils.objective import calculate_objective
-    from src.utils.moves import get_random_neighbor, create_random_state
-    from src.utils.constraints import is_valid_state, to_truck_list
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from models.truck import Truck
+from models.state import State
+from models.package import Package
+from utils.objective import calculate_objective
+from utils.moves import get_random_neighbor, create_random_state
+from utils.constraints import is_valid_state, to_truck_list
 
 @dataclass
 class SimulatedAnnealingResult:
@@ -44,7 +37,7 @@ class SimulatedAnnealingResult:
 
 def simulated_annealing(
     initial_state: State,
-    truck: Truck,
+    truck: Truck | list[Truck],
     initial_temp: float = 1000.0,
     cooling_rate: float = 0.995,
     min_temp: float = 1e-3,
@@ -146,8 +139,10 @@ def plot_simulated_annealing(
         plt.show()
     plt.close()
 
+    iters = [i + 1 for i, v in enumerate(result.exp_history) if v <= 1.0]
+    vals = [v for v in result.exp_history if v <= 1.0]
     plt.figure(figsize=(8, 5))
-    plt.plot(result.acceptance_prob_history, color="tab:orange", alpha=0.7, label=r"Peluang Penerimaan $\min(1, e^{\Delta E / T})$")
+    plt.scatter(iters, vals, s=4, color="tab:orange", alpha=0.7, label=r"$e^{\Delta E / T}$ (iterasi dengan $\Delta E \leq 0$)")
     plt.title(r"Simulated Annealing - Plot $e^{\Delta E / T}$ vs Iterasi")
     plt.xlabel("Iterasi")
     plt.ylabel(r"$e^{\Delta E / T}$")
@@ -173,7 +168,7 @@ def print_result_table(result: SimulatedAnnealingResult, truck: Truck | list[Tru
     table.add_row(["Nilai Terbaik Ditemukan", f"{result.best_value:.2f}"])
     table.add_row(["Total Iterasi", result.iterations])
     table.add_row(["Durasi Pencarian (detik)", f"{result.duration:.4f}"])
-    table.add_row(["Frekuensi Stuck di Local Optima", f"{result.stuck_frequency:.4f} ({result.stuck_count}/{result.iterations})"])
+    table.add_row(["Frekuensi Stuck", f"{result.stuck_frequency:.4f} ({result.stuck_count}/{result.iterations})"])
     table.add_row(["Suhu Awal / Akhir", f"{result.metadata.get('initial_temp', 0):.2f} -> {result.metadata.get('final_temp', 0):.4f}"])
     table.add_row(["Paket Dimuat (State Akhir)", f"{len(result.final_state.inside_placements)} / {len(result.final_state.placements)}"])
     if len(trucks) == 1:
@@ -195,4 +190,4 @@ if __name__ == "__main__":
     state = create_random_state(packages, truck)
     print("Running Simulated Annealing...")
     res = simulated_annealing(state, truck, max_iterations=200)
-    print_result_table(res, truck)
+    print_result_table(res, truck)
