@@ -2,10 +2,10 @@
 | Metrik                   |                         Nilai |
 +--------------------------+-------------------------------+
 | Algoritma                | Steepest-Ascent Hill Climbing |
-| Nilai Awal               |                         95.00 |
+| Nilai Awal               |                        110.00 |
 | Nilai Akhir              |                        150.00 |
-| Total Iterasi            |                             3 |
-| Durasi Pencarian (detik) |                        0.0034 |
+| Total Iterasi            |                             2 |
+| Durasi Pencarian (detik) |                        0.0039 |
 | Paket Dimuat             |                         5 / 5 |
 | Total Bobot Dimuat       |                 33.00 / 80.00 |
 | Status State Valid?      |                            Ya |
