@@ -22,20 +22,12 @@ from algorithms.simulated_annealing import (
     print_result_table as print_sa_table,
     simulated_annealing,
 )
-<<<<<<< HEAD
-=======
-
->>>>>>> 89b6648e65f80b74e5baeb9ba225fc09b4b0744d
 from algorithms.genetic_algorithm import (
     GeneticAlgorithmResult,
     genetic_algorithm,
     plot_genetic_algorithm,
     print_result_table as print_ga_table,
 )
-<<<<<<< HEAD
-=======
-
->>>>>>> 89b6648e65f80b74e5baeb9ba225fc09b4b0744d
 from models.truck import Truck
 from models.package import Package
 from utils.loader import load_instance
@@ -75,21 +67,6 @@ def _write_metrics_sa(result: SimulatedAnnealingResult, truck: Truck | list[Truc
         print_sa_table(result, truck)
     path.write_text(buffer.getvalue(), encoding="utf-8")
 
-def _write_metrics_ga(
-    result: GeneticAlgorithmResult,
-    truck: Truck,
-    path: Path,
-) -> None:
-    import io
-    from contextlib import redirect_stdout
-
-    buffer = io.StringIO()
-    with redirect_stdout(buffer):
-        print_ga_table(result, truck)
-
-    path.write_text(buffer.getvalue(), encoding="utf-8")
-
-
 def _write_metrics_ga(result: GeneticAlgorithmResult, truck: Truck | list[Truck], path: Path) -> None:
     import io
     from contextlib import redirect_stdout
@@ -107,17 +84,13 @@ def run_single(
     seed: int,
     output_dir: Path,
     interactive: bool,
-<<<<<<< HEAD
     population_size: int = 40,
     iterations: int | None = None,
     objective_func = calculate_objective,
-=======
->>>>>>> 89b6648e65f80b74e5baeb9ba225fc09b4b0744d
 ) -> HillClimbingResult | SimulatedAnnealingResult | GeneticAlgorithmResult:
     random.seed(seed)
     name, algo_fn = ALGORITHMS[algorithm_key]
 
-<<<<<<< HEAD
     kwargs = {"objective_func": objective_func}
     if algorithm_key == "random_restart":
         if iterations is not None:
@@ -129,10 +102,6 @@ def run_single(
         if iterations is not None:
             kwargs["iterations"] = iterations
         result = algo_fn(packages, truck, **kwargs)
-=======
-    if algorithm_key in ("random_restart", "ga"):
-        result = algo_fn(packages, truck)
->>>>>>> 89b6648e65f80b74e5baeb9ba225fc09b4b0744d
         initial = result.initial_state
     else:
         initial = create_random_state(packages, truck)
@@ -167,7 +136,6 @@ def run_single(
         return sa_result
 
     if algorithm_key == "ga":
-<<<<<<< HEAD
         ga_result: GeneticAlgorithmResult = result  # type: ignore[assignment]
         plot_genetic_algorithm(ga_result, save_path=str(run_dir / "objective.png"))
         _write_metrics_ga(ga_result, truck, run_dir / "metrics.txt")
@@ -178,28 +146,6 @@ def run_single(
 
     hc_result: HillClimbingResult = result  # type: ignore[assignment]
     plot_objective_history(hc_result, save_path=str(run_dir / "objective.png"))
-=======
-        ga_result: GeneticAlgorithmResult = result
-
-        plot_genetic_algorithm(
-            ga_result,
-            save_path=str(run_dir / "objective.png"),
-        )
-        _write_metrics_ga(ga_result, truck, run_dir / "metrics.txt")
-
-        if interactive:
-            show_state(initial, truck, f"{name} - Initial")
-            show_state(ga_result.final_state, truck, f"{name} - Final")
-
-        return ga_result
-
-    hc_result: HillClimbingResult = result
-
-    plot_objective_history(
-        hc_result,
-        save_path=str(run_dir / "objective.png"),
-    )
->>>>>>> 89b6648e65f80b74e5baeb9ba225fc09b4b0744d
     _write_metrics_hc(hc_result, truck, run_dir / "metrics.txt")
 
     if interactive:
