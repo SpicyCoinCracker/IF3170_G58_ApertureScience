@@ -1,0 +1,260 @@
+{
+  "truck": {
+    "width": 10,
+    "length": 20,
+    "height": 5,
+    "max_capacity": 500
+  },
+  "packages": [
+    {
+      "id": "P01",
+      "width": 6,
+      "length": 3,
+      "height": 2,
+      "value": 45,
+      "weight": 17,
+      "is_fragile": true,
+      "eta": 4
+    },
+    {
+      "id": "P02",
+      "width": 4,
+      "length": 4,
+      "height": 3,
+      "value": 77,
+      "weight": 54,
+      "is_fragile": false,
+      "eta": 7
+    },
+    {
+      "id": "P03",
+      "width": 6,
+      "length": 2,
+      "height": 1,
+      "value": 82,
+      "weight": 28,
+      "is_fragile": false,
+      "eta": 1
+    },
+    {
+      "id": "P04",
+      "width": 5,
+      "length": 6,
+      "height": 4,
+      "value": 67,
+      "weight": 18,
+      "is_fragile": true,
+      "eta": 6
+    },
+    {
+      "id": "P05",
+      "width": 3,
+      "length": 4,
+      "height": 1,
+      "value": 43,
+      "weight": 33,
+      "is_fragile": false,
+      "eta": 5
+    },
+    {
+      "id": "P06",
+      "width": 6,
+      "length": 3,
+      "height": 1,
+      "value": 40,
+      "weight": 27,
+      "is_fragile": false,
+      "eta": 2
+    },
+    {
+      "id": "P07",
+      "width": 3,
+      "length": 3,
+      "height": 1,
+      "value": 53,
+      "weight": 31,
+      "is_fragile": false,
+      "eta": 1
+    },
+    {
+      "id": "P08",
+      "width": 5,
+      "length": 6,
+      "height": 3,
+      "value": 62,
+      "weight": 52,
+      "is_fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P09",
+      "width": 4,
+      "length": 3,
+      "height": 4,
+      "value": 45,
+      "weight": 54,
+      "is_fragile": false,
+      "eta": 5
+    },
+    {
+      "id": "P10",
+      "width": 6,
+      "length": 2,
+      "height": 2,
+      "value": 31,
+      "weight": 46,
+      "is_fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P11",
+      "width": 5,
+      "length": 5,
+      "height": 3,
+      "value": 82,
+      "weight": 23,
+      "is_fragile": false,
+      "eta": 6
+    },
+    {
+      "id": "P12",
+      "width": 2,
+      "length": 3,
+      "height": 1,
+      "value": 86,
+      "weight": 29,
+      "is_fragile": true,
+      "eta": 1
+    },
+    {
+      "id": "P13",
+      "width": 2,
+      "length": 3,
+      "height": 1,
+      "value": 35,
+      "weight": 18,
+      "is_fragile": false,
+      "eta": 5
+    },
+    {
+      "id": "P14",
+      "width": 4,
+      "length": 5,
+      "height": 3,
+      "value": 60,
+      "weight": 47,
+      "is_fragile": true,
+      "eta": 3
+    },
+    {
+      "id": "P15",
+      "width": 2,
+      "length": 3,
+      "height": 2,
+      "value": 46,
+      "weight": 28,
+      "is_fragile": false,
+      "eta": 3
+    },
+    {
+      "id": "P16",
+      "width": 5,
+      "length": 2,
+      "height": 4,
+      "value": 39,
+      "weight": 28,
+      "is_fragile": false,
+      "eta": 6
+    },
+    {
+      "id": "P17",
+      "width": 6,
+      "length": 3,
+      "height": 1,
+      "value": 25,
+      "weight": 24,
+      "is_fragile": false,
+      "eta": 7
+    },
+    {
+      "id": "P18",
+      "width": 2,
+      "length": 4,
+      "height": 4,
+      "value": 67,
+      "weight": 46,
+      "is_fragile": true,
+      "eta": 6
+    },
+    {
+      "id": "P19",
+      "width": 4,
+      "length": 2,
+      "height": 4,
+      "value": 71,
+      "weight": 44,
+      "is_fragile": false,
+      "eta": 7
+    },
+    {
+      "id": "P20",
+      "width": 5,
+      "length": 2,
+      "height": 3,
+      "value": 35,
+      "weight": 51,
+      "is_fragile": false,
+      "eta": 7
+    },
+    {
+      "id": "P21",
+      "width": 3,
+      "length": 5,
+      "height": 2,
+      "value": 35,
+      "weight": 25,
+      "is_fragile": false,
+      "eta": 4
+    },
+    {
+      "id": "P22",
+      "width": 2,
+      "length": 2,
+      "height": 2,
+      "value": 33,
+      "weight": 47,
+      "is_fragile": false,
+      "eta": 2
+    },
+    {
+      "id": "P23",
+      "width": 4,
+      "length": 6,
+      "height": 4,
+      "value": 27,
+      "weight": 39,
+      "is_fragile": false,
+      "eta": 1
+    },
+    {
+      "id": "P24",
+      "width": 3,
+      "length": 4,
+      "height": 1,
+      "value": 88,
+      "weight": 34,
+      "is_fragile": true,
+      "eta": 1
+    },
+    {
+      "id": "P25",
+      "width": 5,
+      "length": 6,
+      "height": 1,
+      "value": 45,
+      "weight": 46,
+      "is_fragile": false,
+      "eta": 1
+    }
+  ]
+}
